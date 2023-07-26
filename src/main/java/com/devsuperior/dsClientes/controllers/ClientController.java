@@ -15,7 +15,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "clients")
+@RequestMapping(value = "/clients")
 public class ClientController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class ClientController {
     }
 
     @PostMapping
-    public ResponseEntity<ClientDTO> insery(@Valid @RequestBody ClientDTO dto){
+    public ResponseEntity<ClientDTO> insert(@Valid @RequestBody ClientDTO dto){
         dto = service.insert(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}")
                 .buildAndExpand(dto.getId()).toUri();

@@ -3,8 +3,11 @@ package com.devsuperior.dsClientes.services;
 import com.devsuperior.dsClientes.dto.ClientDTO;
 import com.devsuperior.dsClientes.entities.Client;
 import com.devsuperior.dsClientes.repositories.ClientRepository;
+import com.devsuperior.dsClientes.services.exceptions.DatabaseException;
 import com.devsuperior.dsClientes.services.exceptions.ResourceNotFoundExeption;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,10 +44,15 @@ public class ClientService {
 
     @Transactional()
     public ClientDTO update(Long id, ClientDTO dto){
-        Client client = repository.getReferenceById(id);
-        copyDtoToEntity(dto,client);
-        client = repository.save(client);
-        return new ClientDTO(client);
+        try {
+            Client client = repository.getReferenceById(id);
+            copyDtoToEntity(dto, client);
+            client = repository.save(client);
+            return new ClientDTO(client);
+        }
+        catch (EntityNotFoundException e){
+            throw new ResourceNotFoundExeption("Recurso não encontrado");
+        }
     }
 
     @Transactional
@@ -53,7 +61,12 @@ public class ClientService {
             throw new ResourceNotFoundExeption("Recurso não encontrado");
         }
 
-        repository.deleteById(id);
+        try {
+            repository.deleteById(id);
+        }
+        catch (DataIntegrityViolationException e){
+            throw new DatabaseException("Falha de integridade referencial");
+        }
     }
 
     private void copyDtoToEntity(ClientDTO dto, Client entity) {
